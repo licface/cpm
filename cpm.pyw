@@ -135,7 +135,7 @@ def setText(aType,aString):
 #         print "\t now clipboard fill with = \"" + str(data_argv) + "\""
 
 
-def main(TEXT, dir_only=False, file_only=False, linux_style=False, linux_style2=False, win_style2=False):
+def main(TEXT, dir_only=False, file_only=False, linux_style=False, linux_style2=False, win_style2=False, url_style = False, change_drive_letter = None):
     if isinstance(TEXT, list) and len(TEXT) > 0:
         if TEXT[0] == "+":
             TEXT.insert(0, os.getcwd())
@@ -193,7 +193,18 @@ def main(TEXT, dir_only=False, file_only=False, linux_style=False, linux_style2=
                 TEXT = os.path.basename(TEXT)
             elif dir_only:
                 TEXT = os.path.dirname(TEXT)
-
+            if change_drive_letter:
+                if not change_drive_letter[-1] == ":":
+                    change_drive_letter = change_drive_letter + ":"
+                if os.path.splitdrive(TEXT)[0]:
+                    if not linux_style or not linux_style2:
+                        TEXT = change_drive_letter + '\\' + os.path.splitdrive(TEXT)[1]
+                    if url_style:
+                        TEXT = TEXT.replace(':\\\\', ':\\')
+            if url_style:
+                TEXT = TEXT.replace('\\', '/')
+                TEXT = 'file:///' + TEXT            
+                    
             if not sys.platform == 'win32':
                 clipboard.copy(TEXT)
                 sendnotify(TEXT)
@@ -239,11 +250,14 @@ def usage():
     parser.add_argument('-l', '--linux-style', action='store_true', help='Copy as linux style')
     parser.add_argument('-L', '--linux-style2', action='store_true', help='Copy as linux style and add "/" in end of file')
     parser.add_argument('-w', '--windows-linux-style', action='store_true', help='Copy as windows style and replace "/" with "//')
+    parser.add_argument('-u', '--url-style', action='store_true', help='Copy as Url style')
+    parser.add_argument('-c', '--change-drive-letter', action='store', help='Copy as Url style')
+    
     if len(sys.argv) == 1:
         main(".")
     else:
         args = parser.parse_args()
-        main(args.STRING, args.directory_only, args.filename_only, args.linux_style, args.linux_style2, args.windows_linux_style)
+        main(args.STRING, args.directory_only, args.filename_only, args.linux_style, args.linux_style2, args.windows_linux_style, args.url_style, args.change_drive_letter)
 
 if __name__ == '__main__':
     usage()
