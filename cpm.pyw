@@ -12,6 +12,8 @@ else:
 import traceback
 import tracert  
 import sendgrowl
+import socket
+import configset
 
 __version__ = "2.0"
 __test__ = "0.3"
@@ -71,71 +73,32 @@ def setText(aType,aString):
             play(sound_file)
             w.CloseClipboard()
 
-# def linuxpath():
-#     data_ex = os.getcwd().replace('\\','/')
-#     data_argv = data_ex + "/" + sys.argv[2]
-#     data_clip_set = setText(w.CF_TEXT, data_argv)
-#     data_clip = getText()
-#     sendnotify(data_clip)
-#     print "\n"
-#     print "\t Sucessfully set clipboard ! \n"
-#     print "\t now clipboard fill with = \"" + data_clip
+def sent_to_clipserver(clip, host='127.0.0.1', port=11111):
+    conf = configset.configset()
+    conf.configname = 'cpm.ini'
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    if os.getenv('CLIPSERVER_HOST'):
+        host = os.getenv('CLIPSERVER_HOST')
+    if os.getenv('CLIPSERVER_PORT'):
+        port = int(os.getenv('CLIPSERVER_PORT'))
+    if os.getenv('CLIPSERVER') == '0':
+        return False
+    if conf.read_config('CLIPSERVER', 'host'):
+        host = conf.read_config('CLIPSERVER', 'host')
+    if conf.read_config('CLIPSERVER', 'port'):
+        port = int(conf.read_config('CLIPSERVER', 'port'))
+    if conf.read_config('CLIPSERVER', 'used'):
+        if conf.read_config('CLIPSERVER', 'used') == 0:
+            return False
+        elif conf.read_config('CLIPSERVER', 'used') == 'False':
+            return False
 
-# def linuxpath2():
-#     data_ex = os.getcwd().replace('\\','/')
-#     data_argv = data_ex + "/" + sys.argv[2] + '/'
-#     data_clip_set = setText(w.CF_TEXT, data_argv)
-#     data_clip = getText()
-#     sendnotify(data_clip)
-#     print "\n"
-#     print "\t Sucessfully set clipboard ! \n"
-#     print "\t now clipboard fill with = \"" + data_clip 
+    client_address = (host, port)
+    sock.sendto(clip, client_address)
+    sock.close()
+    return True
 
-# def winpath(session=None):
-#     if session == None:
-#         data_ex = sys.argv[1].replace('/','\\')
-#         #print "data_ex = ", data_ex
-#         data_argv = data_ex + "\\" + sys.argv[2] + '\\'
-#         data_clip_set = setText(w.CF_TEXT, data_argv)
-#         add_slash = ''
-#     elif session == 1:
-#         data_ex = os.getcwd().replace('\\','/')
-#         data_clip_set = setText(w.CF_TEXT, data_ex)
-#         add_slash = '/'
-#     elif session == 0:
-#         data_ex = os.getcwd().replace('\\','/')
-#         data_clip_set = setText(w.CF_TEXT, data_ex)
-#         add_slash = ''
-#     elif session == 2:
-#         data_ex = os.path.join(os.getcwd(),sys.argv[2].replace('/','\\'))
-#         #print "data_ex = ", data_ex
-#         data_argv = data_ex + '\\'
-#         data_clip_set = setText(w.CF_TEXT, data_argv)
-#         add_slash = ''
-#     else:
-#         print __usage__
-#     data_clip = getText()
-#     sendnotify(data_clip)
-#     if os.path.basename(sys.executable).lower() == 'python.exe':
-#         print "\n"
-#         print "\t Sucessfully set clipboard ! \n"
-#         print "\t now clipboard fill with = \"" + str(data_clip) + add_slash
-
-# def winpath2():
-#     data_ex = os.getcwd()
-#     #data_argv = data_ex + "\\" + sys.argv[2]
-#     data_argv = os.path.join(data_ex, os.path.abspath('\\'.join(sys.argv[2:])))
-#     data_clip_set = setText(w.CF_TEXT, data_argv)
-#     data_clip = getText()
-#     sendnotify(str(data_argv))
-#     if os.path.basename(sys.executable).lower() == 'python.exe':
-#         print "data_argv =", data_argv
-#         print "\n"
-#         print "\t Sucessfully set clipboard ! \n"
-#         print "\t now clipboard fill with = \"" + str(data_argv) + "\""
-
-
-def main(TEXT, dir_only=False, file_only=False, linux_style=False, linux_style2=False, win_style2=False, url_style = False, change_drive_letter = None):
+def main(TEXT, dir_only=False, file_only=False, linux_style=False, linux_style2=False, win_style2=False, url_style = False, change_drive_letter = None, no_clipserver=False):
     if isinstance(TEXT, list) and len(TEXT) > 0:
         if TEXT[0] == "+":
             TEXT.insert(0, os.getcwd())
@@ -207,23 +170,31 @@ def main(TEXT, dir_only=False, file_only=False, linux_style=False, linux_style2=
                     
             if not sys.platform == 'win32':
                 clipboard.copy(TEXT)
+                if not no_clipserver:
+                    sent_to_clipserver(TEXT)
                 sendnotify(TEXT)
             else:
                 data_clip_set = setText(w.CF_TEXT, TEXT)
                 data_clip = getText()
+                if not no_clipserver:
+                    sent_to_clipserver(TEXT)
                 sendnotify(data_clip)           
         else:
             if file_only:
-                    TEXT = os.path.basename(TEXT)
+                TEXT = os.path.basename(TEXT)
             elif dir_only:
                 TEXT = os.path.dirname(TEXT)
             
             if not sys.platform == 'win32':
                 clipboard.copy(TEXT)
+                if not no_clipserver:
+                    sent_to_clipserver(TEXT)
                 sendnotify(TEXT)
             else:
                 data_clip_set = setText(w.CF_TEXT, TEXT)
                 data_clip = getText()
+                if not no_clipserver:
+                    sent_to_clipserver(TEXT)
                 sendnotify(data_clip)
         if os.path.basename(sys.executable).lower() == 'python.exe':
             print "\n\n"
@@ -252,12 +223,13 @@ def usage():
     parser.add_argument('-w', '--windows-linux-style', action='store_true', help='Copy as windows style and replace "/" with "//')
     parser.add_argument('-u', '--url-style', action='store_true', help='Copy as Url style')
     parser.add_argument('-c', '--change-drive-letter', action='store', help='Copy as Url style')
+    parser.add_argument('-x', '--no-clipserver', action='store_true', help="Don't send to clipserver if available")
     
     if len(sys.argv) == 1:
         main(".")
     else:
         args = parser.parse_args()
-        main(args.STRING, args.directory_only, args.filename_only, args.linux_style, args.linux_style2, args.windows_linux_style, args.url_style, args.change_drive_letter)
+        main(args.STRING, args.directory_only, args.filename_only, args.linux_style, args.linux_style2, args.windows_linux_style, args.url_style, args.change_drive_letter, args.no_clipserver)
 
 if __name__ == '__main__':
     usage()
