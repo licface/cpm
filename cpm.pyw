@@ -14,6 +14,7 @@ import tracert
 import sendgrowl
 import socket
 import configset
+from debug import debug
 
 __version__ = "2.0"
 __test__ = "0.3"
@@ -79,15 +80,21 @@ def sent_to_clipserver(clip, host='127.0.0.1', port=11111):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     if os.getenv('CLIPSERVER_HOST'):
         host = os.getenv('CLIPSERVER_HOST')
+        debug(getenv='', CLIPSERVER_HOST=host)
     if os.getenv('CLIPSERVER_PORT'):
         port = int(os.getenv('CLIPSERVER_PORT'))
+        debug(getenv='', CLIPSERVER_PORT=port)
     if os.getenv('CLIPSERVER') == '0':
+        debug(getenv='', CLIPSERVER=os.getenv('CLIPSERVER'))
         return False
     if conf.read_config('CLIPSERVER', 'host'):
         host = conf.read_config('CLIPSERVER', 'host')
+        debug(read_config='', host=host)
     if conf.read_config('CLIPSERVER', 'port'):
         port = int(conf.read_config('CLIPSERVER', 'port'))
+        debug(read_config='', port=port)
     if conf.read_config('CLIPSERVER', 'used'):
+        debug(read_config='', used=conf.read_config('CLIPSERVER', 'used'))
         if conf.read_config('CLIPSERVER', 'used') == 0:
             if os.path.basename(sys.executable).lower() == 'python.exe':
                 print "NO sent to clipserver"
@@ -98,6 +105,9 @@ def sent_to_clipserver(clip, host='127.0.0.1', port=11111):
             return False
     if os.path.basename(sys.executable).lower() == 'python.exe':
         print "sent to clipserver"
+        debug("sent_to_clipserver")
+    debug(host=host)
+    debug(port=port)
     client_address = (host, port)
     sock.sendto(clip, client_address)
     sock.close()
