@@ -89,10 +89,15 @@ def sent_to_clipserver(clip, host='127.0.0.1', port=11111):
         port = int(conf.read_config('CLIPSERVER', 'port'))
     if conf.read_config('CLIPSERVER', 'used'):
         if conf.read_config('CLIPSERVER', 'used') == 0:
+            if os.path.basename(sys.executable).lower() == 'python.exe':
+                print "NO sent to clipserver"
             return False
         elif conf.read_config('CLIPSERVER', 'used') == 'False':
+            if os.path.basename(sys.executable).lower() == 'python.exe':
+                print "NO sent to clipserver"
             return False
-
+    if os.path.basename(sys.executable).lower() == 'python.exe':
+        print "sent to clipserver"
     client_address = (host, port)
     sock.sendto(clip, client_address)
     sock.close()
