@@ -10,7 +10,7 @@ if sys.platform == 'win32':
 else:
     import clipboard
 import traceback
-import tracert  
+#import tracert  
 import sendgrowl
 import socket
 import configset
@@ -242,6 +242,31 @@ def usage():
     
     if len(sys.argv) == 1:
         main(".")
+    if sys.argv[1] == '-h' or sys.argv[1] == '--help' or sys.argv[1] == 'help':
+        import easygui
+        USAGE = """usage: cpm.pyw [-h] [-f] [-d] [-l] [-L] [-w] [-u] [-c CHANGE_DRIVE_LETTER]
+               [-x]
+               [STRING [STRING ...]]
+
+positional arguments:
+  STRING                String/Text copy to
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -f, --filename-only   Copy basename or filename only
+  -d, --directory-only  Copy directory name only
+  -l, --linux-style     Copy as linux style
+  -L, --linux-style2    Copy as linux style and add "/" in end of file
+  -w, --windows-linux-style
+                        Copy as windows style and replace "/" with "//
+  -u, --url-style       Copy as Url style
+  -c CHANGE_DRIVE_LETTER, --change-drive-letter CHANGE_DRIVE_LETTER
+                        Copy as Url style
+  -x, --no-clipserver   Don't send to clipserver if available
+        """
+        image = r'f:\ICONS\FatCow_Icons32x32\clipboard_empty.png'
+        choices = ["Close"]
+        reply = easygui.codebox(msg='CPM Usage', title='CPM Usage', text=USAGE)
     else:
         args = parser.parse_args()
         main(args.STRING, args.directory_only, args.filename_only, args.linux_style, args.linux_style2, args.windows_linux_style, args.url_style, args.change_drive_letter, args.no_clipserver)
