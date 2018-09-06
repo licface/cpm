@@ -32,12 +32,22 @@ CLIP_APP = r'c:\TOOLS\EXE\cpath.exe'
 #     CLIP_APP = 'cpath.exe'
 
 def play(sound_file):
-    winsound.PlaySound(sound_file, winsound.SND_ALIAS)    
+    winsound.PlaySound(sound_file, winsound.SND_ALIAS)
+
+def make_icon():
+    if not os.path.isfile(os.path.join(os.path.dirname(__file__), 'cpm_img.txt')):
+        return r'f:\ICONS\FatCow_Icons32x32\clipboard_empty.png'
+    f = open(os.path.join(os.path.dirname(__file__), 'cpm_img.txt'), 'rb')
+    g = open(os.path.join(os.path.dirname(__file__), 'clipboard.png'), 'wb')
+    g.write(f.read().decode('base64'))
+    g.close()
+    f.close()
+    return os.path.join(os.path.dirname(__file__), g.name)    
 
 def sendnotify(dcopy, title="CPM - Copy Clipboard", msg="now clipboard fill with = "):
     try:
         mclass = sendgrowl.growl()
-        icon = r'f:\ICONS\FatCow_Icons32x32\clipboard_empty.png'
+        icon = make_icon()
         event = 'CPM - Copy Clipboard'
         text =  msg + "\"" + str(dcopy) +  "\""
         appname = 'cpm'
