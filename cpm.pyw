@@ -86,7 +86,7 @@ def setText(aType,aString):
 
 def sent_to_clipserver(clip, host='127.0.0.1', port=11111):
     conf = configset.configset()
-    conf.configname = 'cpm.ini'
+    conf.configname = os.path.join(os.path.dirname(__file__), 'cpm.ini')
     conf.path = os.path.dirname(__file__)
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     if os.getenv('CLIPSERVER_HOST'):
