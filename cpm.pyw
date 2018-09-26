@@ -84,10 +84,12 @@ def setText(aType,aString):
             play(sound_file)
             w.CloseClipboard()
 
-def sent_to_clipserver(clip, host='127.0.0.1', port=11111):
+def sent_to_clipserver(clip, host=None, port=11111):
     conf = configset.configset()
     conf.configname = os.path.join(os.path.dirname(__file__), 'cpm.ini')
     conf.path = os.path.dirname(__file__)
+    if not host:
+        host = conf.read_config('SERVER', 'host', value = '127.0.0.1')
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     if os.getenv('CLIPSERVER_HOST'):
         host = os.getenv('CLIPSERVER_HOST')
